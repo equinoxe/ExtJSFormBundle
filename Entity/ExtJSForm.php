@@ -1,11 +1,22 @@
 <?php
 namespace Equinoxe\ExtJSFormBundle\Entity;
 
+use Equinoxe\ExtJSFormBundle\Exceptions\JsonException;
 
 class ExtJSForm
 {
+    private $valueTypes = array(
+        'textfield',
+        'checkbox'
+    );
+    /**
+     * The json Ext JS form definition.
+     *
+     * @var string
+     */
+    private $formDefinition;
 
-    public function __construct($formDefinition)
+    public function __construct($formDefinition = null)
     {
         $this->formDefinition = $formDefinition;
     }
@@ -26,11 +37,82 @@ class ExtJSForm
             throw new \Exception('Form definition doesn\'t contain element form/items');
         }
 
-        foreach($def['form']['items'] as $field) {
-            // TODO: Recursive loop.
-            $allowedFields[$field['name']] = $field;
+        $defaultType = null;
+        if (isset($def['form']['defaultType'])) {
+            $defaultType = $def['form']['defaultType'];
+        }
+        
+        return $this->getFieldsFromArray($def['form']['items'], $defaultType);
+    }
+
+    function getFieldsFromArray($array, $defaultType = null)
+    {
+        $allowedFields = array();
+        foreach($array as $field) {
+            if (!isset($field['xtype'])) {
+                if ($defaultType == null) {
+                    continue;
+                }
+                $field['xtype'] = $defaultType;
+            }
+            if(in_array($field['xtype'], $this->valueTypes)) {
+                if (!isset($field['name'])) {
+                    throw new \Exception("Name not set for field " . $field['xtype']);
+                }
+                $allowedFields[$field['name']] = $field;
+            }
+
+            if (isset($field['items'])) {
+                if (isset($field['defaultType'])) {
+                    $defaultType = $field['defaultType'];
+                }
+                $allowedFields = array_merge($allowedFields, $this->getFieldsFromArray($field['items'], $defaultType));
+            }
         }
         return $allowedFields;
-        
+    }
+
+    public function getMandatoryFields()
+    {
+        $mandatoryFields = array();
+        $fields = $this->getFields();
+        foreach($fields as $field) {
+            if (isset($field['allowBlank']) && $field['allowBlank'] == false) {
+                $mandatoryFields[$field['name']] = $field;
+            }
+        }
+        return $mandatoryFields;
+    }
+
+    public function getFieldsBy($property, $value)
+    {
+        $matched = array();
+        $fields = $this->getFields();
+        foreach($fields as $field) {
+            if (isset($field[$property]) && $field[$property] == $value) {
+                $matched[$field['name']] = $field;
+            }
+        }
+        return $matched;
+    }
+
+    /**
+     * Getter for $formDefinition.
+     *
+     * @return <type>
+     */
+    public function getFormDefinition()
+    {
+        return $this->formDefinition;
+    }
+
+    /**
+     * Setter for $formDefinition.
+     *
+     * @param string $formDefinition The json Ext JS string.
+     */
+    public function setFormDefinition($formDefinition)
+    {
+        $this->formDefinition = $formDefinition;
     }
 }
