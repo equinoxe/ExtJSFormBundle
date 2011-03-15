@@ -1,0 +1,3 @@
+homepage:
+    pattern:  /extjsform
+    defaults: { _controller: ExtJSFormBundle:Default:index }
