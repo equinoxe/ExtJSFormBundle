@@ -13,7 +13,7 @@ class ExtJSForm {
         $allowedFields = array();
         $def = \json_decode($this->formDefinition, true);
         if ($def == null) {
-            throw new JsonException('Form definition of Webtask ' . $webtask[0]->getUid() . ' is not valid.', \json_last_error());
+            throw new JsonException('Form definition of is not valid.', \json_last_error());
         }
 
         if (!isset($def['form'])) {
