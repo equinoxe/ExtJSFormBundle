@@ -2,14 +2,16 @@
 namespace Equinoxe\ExtJSFormBundle\Entity;
 
 
-class ExtJSForm {
+class ExtJSForm
+{
 
     public function __construct($formDefinition)
     {
         $this->formDefinition = $formDefinition;
     }
 
-    public function getFields(){
+    public function getFields()
+    {
         $allowedFields = array();
         $def = \json_decode($this->formDefinition, true);
         if ($def == null) {
@@ -31,6 +33,4 @@ class ExtJSForm {
         return $allowedFields;
         
     }
-
-
 }
