@@ -52,7 +52,8 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
             }
         ';
         $this->object = new ExtJSForm($definition);
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
                 'field_1' => array(
                     'name' => 'field_1',
                     'fieldLabel' => 'Feld 1',
@@ -112,7 +113,8 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
             }
         ';
         $this->object = new ExtJSForm($definition);
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
                 'field_2' => array(
                     'name' => 'field_2',
                     'fieldLabel' => 'Feld 2',
@@ -164,7 +166,8 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
             }
         ';
         $this->object = new ExtJSForm($definition);
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
                 'field_1' => array(
                     'name' => 'field_1',
                     'fieldLabel' => 'Feld 1',
@@ -180,7 +183,8 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
             $this->object->getFieldsBy('xtype', 'textfield')
         );
 
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
                 'field_3' => array(
                     'name' => 'field_3',
                     'fieldLabel' => 'Feld 3',
@@ -201,5 +205,4 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
         $this->object->setFormDefinition($formDefinition);
         $this->assertEquals($formDefinition, $this->object->getFormDefinition());
     }
-
 }
