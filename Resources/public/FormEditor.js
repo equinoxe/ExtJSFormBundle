@@ -5,6 +5,9 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
     initComponent: function() {
 
         var componentSelector = new ExtJSFormBundle.ComponentSelector({
+            region: 'west',
+            split: true,
+            collabsible: true,
             width: 250
         });
 
@@ -29,7 +32,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
             title: 'Preview',
             bodyStyle: 'padding: 10px',
             layout: 'fit',
-            flex: 1,
+            region: 'center',
             items: [
                 formPanel
             ],
@@ -82,11 +85,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
 
         Ext.apply(this, {
             title: 'Form Designer',
-            layout: 'hbox',
-            layoutConfig: {
-                align : 'stretch',
-                pack  : 'start'
-            },
+            layout: 'border',
             items: [
                 componentSelector,
                 preview
@@ -99,10 +98,60 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
 ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
     initComponent: function() {
 
+        var propertyEditor = new Ext.grid.PropertyGrid({
+            title: 'Properties',
+            flex: 1,
+            viewConfig : {
+                forceFit: true,
+                scrollOffset: 2 // the grid will never have scrollbars
+            },
+            listeners: {
+                afterEdit: function(e) {
+                    console.log("AFTER EDIT", e);
+                    this.currentObject[e.record.id] = e.value;
+                    if (e.record.id == 'fieldLabel') {
+                        Ext.fly(this.currentObject.el.dom.parentNode.previousSibling).update(e.value + ': ');
+                    }
+                    this.currentObject.ownerCt.doLayout();
+                }
+            }
+        });
+
+        var focus = function(obj) {
+            var conf = {};
+            for(var propName in obj.editableProperties) {
+                if (typeof obj[propName] != 'undefined') {
+                    conf[propName] = obj[propName];
+                } else {
+                    var type = obj.editableProperties[propName];
+                    switch (type) {
+                        case 'string':
+                            conf[propName] = '';
+                            break;
+                        case 'boolean':
+                            conf[propName] = false;
+                            break;
+                        case 'date':
+                            conf[propName] = new Date();
+                            break;
+                        default:
+                            conf[propName] = '';
+                    }
+                }
+            }
+            propertyEditor.currentObject = obj;
+            propertyEditor.setSource(conf);
+        };
+
+        var focusLost = function(obj) {
+            propertyEditor.setSource({});
+        };
+
         var componentList = new Ext.tree.TreePanel({
+            title: 'Components',
             rootVisible: false,
+            autoHeight: true,
             ddGroup: 'test',
-            border: false,
             enableDD: true,
             root: {
                 text: 'Elements',
@@ -111,12 +160,21 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                 children: [
                 {
                     text: 'Form elements',
+                    expanded: true,
                     children: [
                         {
                             text: 'Text field',
                             fieldInfo: {
                                 xtype: 'textfield',
-                                fieldLabel: 'Text label'
+                                fieldLabel: 'Text label',
+                                editableProperties: {
+                                    fieldLabel: 'string',
+                                    name: 'string',
+                                    datum: 'date'
+                                },
+                                listeners: {
+                                    focus: focus
+                                }
                             },
                             draggable: true,
                             leaf: true
@@ -184,12 +242,18 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
             }
         });
 
+        
+
         Ext.apply(this, {
-           title: 'Components',
-           layout: 'fit',
-           items: [
-               componentList
-           ]
+            layout: 'vbox',
+            layoutConfig: {
+                align : 'stretch',
+                pack  : 'start'
+            },
+            items: [
+                componentList,
+                propertyEditor
+            ]
         });
         ExtJSFormBundle.ComponentSelector.superclass.initComponent.call(this);
     }
