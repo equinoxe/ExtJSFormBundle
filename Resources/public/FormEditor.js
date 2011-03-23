@@ -110,7 +110,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     console.log("AFTER EDIT", e);
                     this.currentObject[e.record.id] = e.value;
                     if (e.record.id == 'fieldLabel') {
-                        Ext.fly(this.currentObject.el.dom.parentNode.previousSibling).update(e.value + ': ');
+                        this.currentObject.el.up('.x-form-item', 10, true).child('.x-form-item-label').update(e.value + ': ');
                     }
                     this.currentObject.ownerCt.doLayout();
                 }
