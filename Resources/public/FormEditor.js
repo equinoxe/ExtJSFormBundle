@@ -1,5 +1,7 @@
 Ext.ns("ExtJSFormBundle");
 
+
+
 ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
 
     initComponent: function() {
@@ -73,8 +75,9 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                         onNodeDrop : function(target, dd, e, data){
                             if (   data.node
                                 && data.node.attributes
-                                && data.node.attributes.fieldInfo) {
-                                target.add(data.node.attributes.fieldInfo);
+                                && data.node.attributes.editorConfig) {
+                                var component = new data.node.attributes.jsonComponent(data.node.attributes.editorConfig);
+                                target.add(component);
                                 target.doLayout();
                             }
                         }
@@ -86,6 +89,34 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
         Ext.apply(this, {
             title: 'Form Designer',
             layout: 'border',
+            tbar: [
+                {
+                    text: 'Get JSON',
+                    handler: function() {
+                        var getJson = function(obj) {
+                            var config = {items: []};
+                            var items = obj.items.items;
+                            for(var i = 0; i < items.length; i++) {
+                                config.items.push(items[i].storedConfig);
+                            }
+                            return config;
+                        }
+
+                        var win = new Ext.Window({
+                            width:  300,
+                            height: 400,
+                            layout: 'fit',
+                            title:  'JSON Output',
+                            items: [
+                                {
+                                    xtype: 'textarea',
+                                    value: Ext.ux.JSON.encode(getJson(formPanel))
+                                }
+                            ]
+                        }).show();
+                    }
+                }
+            ],
             items: [
                 componentSelector,
                 preview
@@ -107,8 +138,8 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
             },
             listeners: {
                 afterEdit: function(e) {
-                    console.log("AFTER EDIT", e);
                     this.currentObject[e.record.id] = e.value;
+                    this.currentObject.storedConfig[e.record.id] = e.value;
                     if (e.record.id == 'fieldLabel') {
                         this.currentObject.el.up('.x-form-item', 10, true).child('.x-form-item-label').update(e.value + ': ');
                     }
@@ -118,12 +149,13 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
         });
 
         var focus = function(obj) {
+            var props = obj.getEditableProperties();
             var conf = {};
-            for(var propName in obj.editableProperties) {
+            for(var propName in props) {
                 if (typeof obj[propName] != 'undefined') {
                     conf[propName] = obj[propName];
                 } else {
-                    var type = obj.editableProperties[propName];
+                    var type = props[propName];
                     switch (type) {
                         case 'string':
                             conf[propName] = '';
@@ -162,23 +194,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     text: 'Form elements',
                     expanded: true,
                     children: [
-                        {
-                            text: 'Text field',
-                            fieldInfo: {
-                                xtype: 'textfield',
-                                fieldLabel: 'Text label',
-                                editableProperties: {
-                                    fieldLabel: 'string',
-                                    name: 'string',
-                                    datum: 'date'
-                                },
-                                listeners: {
-                                    focus: focus
-                                }
-                            },
-                            draggable: true,
-                            leaf: true
-                        },
+                        ExtJSFormBundle.component.TextField.getTreeNode({listeners: { focus: focus}}),
                         {
                             text: 'Fieldset',
                             fieldInfo: {
@@ -242,8 +258,6 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
             }
         });
 
-        
-
         Ext.apply(this, {
             layout: 'vbox',
             layoutConfig: {
@@ -258,3 +272,57 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
         ExtJSFormBundle.ComponentSelector.superclass.initComponent.call(this);
     }
 });
+
+
+Ext.ns('ExtJSFormBundle.component');
+
+
+
+ExtJSFormBundle.component.TextField = function() {
+
+    var defaultConfig = {
+        fieldLabel: 'Text label'
+    };
+
+    var editableProperties = {
+        fieldLabel: 'string',
+        name:       'string'
+    };
+
+    var component = Ext.extend(Ext.form.TextField, {
+        storedConfig: {},
+        initComponent: function() {
+            this.storedConfig = {
+                xtype: 'textfield'
+            };
+            Ext.apply(this.storedConfig, defaultConfig);
+            Ext.apply(this, defaultConfig);
+            component.superclass.initComponent.call(this);
+        },
+        getEditableProperties: function() {
+            return editableProperties;
+        }
+    });
+   
+
+    return {
+        getTreeNode: function(config) {
+            return {
+                text: 'Text field',
+                id: 'textfield',
+                leaf: true,
+                jsonComponent: component,
+                editableProperties: editableProperties,
+                editorConfig: config
+            }
+        },
+        getComponent: function() {
+            return component;
+        }
+    };
+}();
+
+
+
+
+
