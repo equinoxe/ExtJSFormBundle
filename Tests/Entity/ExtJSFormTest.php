@@ -55,24 +55,24 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
         $this->assertEquals(
             array(
                 'field_1' => array(
-                    'name' => 'field_1',
+                    'name'       => 'field_1',
                     'fieldLabel' => 'Feld 1',
-                    'xtype' => 'textfield'
+                    'xtype'      => 'textfield'
                 ),
                 'field_2' => array(
-                    'name' => 'field_2',
+                    'name'       => 'field_2',
                     'fieldLabel' => 'Feld 2',
-                    'xtype' => 'textfield'
+                    'xtype'      => 'textfield'
                 ),
                 'field_3' => array(
-                    'name' => 'field_3',
+                    'name'       => 'field_3',
                     'fieldLabel' => 'Feld 3',
-                    'xtype' => 'checkbox'
+                    'xtype'      => 'checkbox'
                 ),
                 'field_4' => array(
-                    'name' => 'field_4',
+                    'name'       => 'field_4',
                     'fieldLabel' => 'Feld 4',
-                    'xtype' => 'textfield'
+                    'xtype'      => 'textfield'
                 )
             ),
             $this->object->getFields()
@@ -116,15 +116,15 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
         $this->assertEquals(
             array(
                 'field_2' => array(
-                    'name' => 'field_2',
+                    'name'       => 'field_2',
                     'fieldLabel' => 'Feld 2',
-                    'xtype' => 'textfield',
+                    'xtype'      => 'textfield',
                     'allowBlank' => false
                 ),
                 'field_3' => array(
-                    'name' => 'field_3',
+                    'name'       => 'field_3',
                     'fieldLabel' => 'Feld 3',
-                    'xtype' => 'checkbox',
+                    'xtype'      => 'checkbox',
                     'allowBlank' => false
                 )
             ),
@@ -169,14 +169,14 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
         $this->assertEquals(
             array(
                 'field_1' => array(
-                    'name' => 'field_1',
+                    'name'       => 'field_1',
                     'fieldLabel' => 'Feld 1',
-                    'xtype' => 'textfield'
+                    'xtype'      => 'textfield'
                 ),
                 'field_2' => array(
-                    'name' => 'field_2',
+                    'name'       => 'field_2',
                     'fieldLabel' => 'Feld 2',
-                    'xtype' => 'textfield',
+                    'xtype'      => 'textfield',
                     'allowBlank' => false
                 )
             ),
@@ -186,9 +186,9 @@ class ExtJSFormTest extends \Equinoxe\TestBundle\Test\WebTestCase
         $this->assertEquals(
             array(
                 'field_3' => array(
-                    'name' => 'field_3',
+                    'name'       => 'field_3',
                     'fieldLabel' => 'Feld 3',
-                    'xtype' => 'checkbox',
+                    'xtype'      => 'checkbox',
                     'allowBlank' => false
                 )
             ),
