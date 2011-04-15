@@ -3,16 +3,39 @@ namespace Equinoxe\ExtJSFormBundle\Entity;
 
 use Equinoxe\ExtJSFormBundle\Exceptions\JsonException;
 
+/**
+ * @orm:Entity
+ */
 class ExtJSForm
 {
     private $valueTypes = array(
         'textfield',
         'checkbox'
     );
+
+    /**
+     * Unique number for every form. Auto incremented.
+     *
+     * @var integer
+     * @orm:Id
+     * @orm:Column(type="integer")
+     * @orm:GeneratedValue(strategy="IDENTITY")
+     */
+    private $uid;
+
+    /**
+     * The name of the form.
+     *
+     * @var string
+     * @orm:Column(type="string")
+     */
+    private $name;
+
     /**
      * The json Ext JS form definition.
      *
      * @var string
+     * @orm:Column(type="text")
      */
     private $formDefinition;
 
@@ -114,5 +137,26 @@ class ExtJSForm
     public function setFormDefinition($formDefinition)
     {
         $this->formDefinition = $formDefinition;
+    }
+
+
+    public function getUid()
+    {
+        return $this->uid;
+    }
+
+    public function setUid($uid)
+    {
+        $this->uid = $uid;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
     }
 }

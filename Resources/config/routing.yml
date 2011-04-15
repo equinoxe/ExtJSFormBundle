@@ -1,3 +1,4 @@
-homepage:
-    pattern:  /extjsform
-    defaults: { _controller: ExtJSFormBundle:Default:index }
+extjsform_form_list:
+    pattern:  /form/list.{_format}
+    defaults: { _controller: ExtJSFormBundle:Form:list, _format: json }
+    requirements: { _format: (xml|json) }
