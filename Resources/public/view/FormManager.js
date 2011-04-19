@@ -6,13 +6,37 @@ ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
         var action = {
             'open': new Ext.Action({
                 text: 'Open',
-                disabled: false,
+                disabled: true,
                 icon: '/bundles/flexiflow/images/icons/edit.png',
                 handler: function() {
                     var record = self.list.getSelectionModel().getSelected();
                     var exec = new ExtJSFormBundle.FormEditor({
                         form: record,
-                        closable: true
+                        closable: true,
+                        listeners: {
+                            afterRender: function(editor) {
+                                // Laden...
+                                var form = {
+                                  items : [    {
+                                      xtype : "textfield",
+                                      fieldLabel : "Text label"
+                                  },    {
+                                      xtype : "textfield",
+                                      fieldLabel : "Text label"
+                                  }]
+                                };
+                                editor.formPanel.removeAll();
+                                for(var i=0; i<form.items.length; i++) {
+                                    if (ExtJSFormBundle.xMap[form.items[i].xtype]) {
+                                        Ext.apply(form.items[i], {listeners: {focus: editor.componentSelector.focus}});
+                                        editor.formPanel.add(
+                                            new ExtJSFormBundle.xMap[form.items[i].xtype](form.items[i])
+                                        );
+                                    }
+                                }
+                                editor.formPanel.doLayout();
+                            }
+                        }
                     });
                     self.add(exec).show();
                 }
