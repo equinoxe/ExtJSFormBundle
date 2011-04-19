@@ -1,19 +1,20 @@
 Ext.ns("ExtJSFormBundle");
 
-
+ExtJSFormBundle.xMap = {};
 
 ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
 
     initComponent: function() {
 
-        var componentSelector = new ExtJSFormBundle.ComponentSelector({
+        var self = this;
+        self.componentSelector = new ExtJSFormBundle.ComponentSelector({
             region: 'west',
             split: true,
             collabsible: true,
             width: 250
         });
 
-        var formPanel = new Ext.form.FormPanel({
+        self.formPanel = new Ext.form.FormPanel({
             title: 'New Form',
             bodyStyle: 'padding: 10px',
             tbar: [
@@ -30,13 +31,13 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
             ]
         });
 
-        var preview = new Ext.Panel({
+        self.preview = new Ext.Panel({
             title: 'Preview',
             bodyStyle: 'padding: 10px',
             layout: 'fit',
             region: 'center',
             items: [
-                formPanel
+                self.formPanel
             ],
             listeners: {
                 render: function(obj) {
@@ -46,7 +47,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                         //      If the mouse is over a grid row, return that node. This is
                         //      provided as the "target" parameter in all "onNodeXXXX" node event handling functions
                         getTargetFromEvent: function(e) {
-                            return formPanel;
+                            return self.formPanel;
                         },
 
                         //      On entry into a target node, highlight that node.
@@ -110,7 +111,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                             items: [
                                 {
                                     xtype: 'textarea',
-                                    value: Ext.ux.JSON.encode(getJson(formPanel))
+                                    value: Ext.ux.JSON.encode(getJson(self.formPanel))
                                 }
                             ]
                         }).show();
@@ -118,8 +119,8 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                 }
             ],
             items: [
-                componentSelector,
-                preview
+                self.componentSelector,
+                self.preview
             ]
         });
         ExtJSFormBundle.FormEditor.superclass.initComponent.call(this);
@@ -128,6 +129,8 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
 
 ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
     initComponent: function() {
+
+        var self = this;
 
         var propertyEditor = new Ext.grid.PropertyGrid({
             title: 'Properties',
@@ -148,7 +151,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
             }
         });
 
-        var focus = function(obj) {
+        this.focus = function(obj) {
             var props = obj.getEditableProperties();
             var conf = {};
             for(var propName in props) {
@@ -194,7 +197,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     text: 'Form elements',
                     expanded: true,
                     children: [
-                        ExtJSFormBundle.component.TextField.getTreeNode({listeners: { focus: focus}}),
+                        ExtJSFormBundle.component.TextField.getTreeNode({listeners: {focus: self.focus}}),
                         {
                             text: 'Fieldset',
                             fieldInfo: {
@@ -321,6 +324,8 @@ ExtJSFormBundle.component.TextField = function() {
         }
     };
 }();
+
+ExtJSFormBundle.xMap['textfield'] = ExtJSFormBundle.component.TextField.getComponent();
 
 
 
