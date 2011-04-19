@@ -4,9 +4,21 @@ ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
     initComponent: function() {
         var self = this;
         var action = {
+            'add': new Ext.Action({
+                text: 'Add',
+                disabled: false,
+                icon: '/bundles/flexiflow/images/icons/add.png',
+                handler: function() {
+                    var record = self.list.getSelectionModel().getSelected();
+                    var exec = new ExtJSFormBundle.FormEditor({
+                        closable: true
+                    });
+                    self.add(exec).show();
+                }
+            }),
             'open': new Ext.Action({
                 text: 'Open',
-                disabled: false,
+                disabled: true,
                 icon: '/bundles/flexiflow/images/icons/edit.png',
                 handler: function() {
                     var record = self.list.getSelectionModel().getSelected();
@@ -36,6 +48,7 @@ ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
                pageSize: 25
             }),
             tbar: [
+                action.add,
                 action.open
             ],
             store: this.listStore,
