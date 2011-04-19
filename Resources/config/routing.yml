@@ -2,3 +2,18 @@ extjsform_form_list:
     pattern:  /form/list.{_format}
     defaults: { _controller: ExtJSFormBundle:Form:list, _format: json }
     requirements: { _format: (xml|json) }
+
+extjsform_form_get:
+    pattern:  /form/get/{id}.{_format}
+    defaults: { _controller: ExtJSFormBundle:Form:get, _format: json }
+    requirements: { _format: (xml|json) }
+
+extjsform_form_save:
+    pattern:  /form/save.{_format}
+    defaults: { _controller: ExtJSFormBundle:Form:save, _format: json }
+    requirements: { _format: (xml|json) }
+
+extjsform_form_delete:
+    pattern:  /form/delete.{_format}
+    defaults: { _controller: ExtJSFormBundle:Form:delete, _format: json }
+    requirements: { _format: (xml|json) }

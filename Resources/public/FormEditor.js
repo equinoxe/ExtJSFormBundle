@@ -7,6 +7,13 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
     initComponent: function() {
 
         var self = this;
+
+        self.create = true;
+
+        if (self.form && self.form.get('uid')) {
+            self.create = false;
+        }
+
         self.componentSelector = new ExtJSFormBundle.ComponentSelector({
             region: 'west',
             split: true,
@@ -15,7 +22,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
         });
 
         self.formPanel = new Ext.form.FormPanel({
-            title: 'New Form',
+            title: self.form.get('name'),
             bodyStyle: 'padding: 10px',
             tbar: [
                 {
@@ -76,10 +83,11 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                         onNodeDrop : function(target, dd, e, data){
                             if (   data.node
                                 && data.node.attributes
-                                && data.node.attributes.editorConfig) {
+                                && data.node.attributes.editorConfig) {                                
                                 var component = new data.node.attributes.jsonComponent(data.node.attributes.editorConfig);
                                 target.add(component);
                                 target.doLayout();
+                                self.fireEvent('dirty', self);
                             }
                         }
                     });
@@ -87,21 +95,46 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
             }
         });
 
+        self.aSave = new Ext.Action({
+           text: 'Speichern',
+           handler: function() {
+               var formDefinition = Ext.encode({form: self.getJson()});
+
+               var params = {
+                  formDefinition: formDefinition,
+                  name: self.form.get('name')
+               };
+
+               if (self.create) {
+                   params['new'] = true;
+               } else {
+                   params.uid = self.form.get('uid');
+               }
+
+               Ext.Ajax.request({
+                  url: 'form/save.json',
+                  params: params,
+                  success: function(response) {
+                      var result = Ext.decode(response.responseText);
+                      console.log(result);
+                      if (result.success && result.success == true) {
+                          self.fireEvent('clean', self);
+                      } else {
+                          Ext.Msg.alert('Error', result.error);
+                      }
+                  }
+               });
+           }
+        });
+
         Ext.apply(this, {
-            title: 'Form Designer',
+            title: 'Edit form ' + self.form.get('name'),
             layout: 'border',
             tbar: [
+                self.aSave,
                 {
                     text: 'Get JSON',
                     handler: function() {
-                        var getJson = function(obj) {
-                            var config = {items: []};
-                            var items = obj.items.items;
-                            for(var i = 0; i < items.length; i++) {
-                                config.items.push(items[i].storedConfig);
-                            }
-                            return config;
-                        }
 
                         var win = new Ext.Window({
                             width:  300,
@@ -111,7 +144,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                             items: [
                                 {
                                     xtype: 'textarea',
-                                    value: Ext.ux.JSON.encode(getJson(self.formPanel))
+                                    value: Ext.ux.JSON.encode(self.getJson())
                                 }
                             ]
                         }).show();
@@ -124,6 +157,16 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
             ]
         });
         ExtJSFormBundle.FormEditor.superclass.initComponent.call(this);
+    },
+    getJson: function() {
+        var self = this;
+        var obj = self.formPanel;
+        var config = {items: []};
+        var items = obj.items.items;
+        for(var i = 0; i < items.length; i++) {
+            config.items.push(items[i].storedConfig);
+        }
+        return config;
     }
 });
 
@@ -147,6 +190,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                         this.currentObject.el.up('.x-form-item', 10, true).child('.x-form-item-label').update(e.value + ': ');
                     }
                     this.currentObject.ownerCt.doLayout();
+                    self.ownerCt.fireEvent('dirty', self.ownerCt);
                 }
             }
         });
@@ -298,8 +342,13 @@ ExtJSFormBundle.component.TextField = function() {
             this.storedConfig = {
                 xtype: 'textfield'
             };
-            Ext.apply(this.storedConfig, defaultConfig);
-            Ext.apply(this, defaultConfig);
+            for (var propertyName in editableProperties) {
+                if (typeof this[propertyName] != 'undefined') {
+                    this.storedConfig[propertyName] = this[propertyName];
+                }
+            }
+            Ext.applyIf(this.storedConfig, defaultConfig);
+            Ext.applyIf(this, defaultConfig);
             component.superclass.initComponent.call(this);
         },
         getEditableProperties: function() {

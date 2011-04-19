@@ -49,6 +49,26 @@ class FormController extends Controller
         }
     }
 
+    public function getAction($id, $_format)
+    {
+        $simpleOutput = $this->get('equinoxe.simpleoutput');
+        try {
+            $em = $this->get('doctrine.orm.entity_manager');
+            $item = $em->find('Equinoxe\ExtJSFormBundle\Entity\ExtJSForm', $id);
+
+            $response = array(
+                "uid" => $item->getUid(),
+                "formDefinition" => \json_decode($item->getFormDefinition()),
+                "name" => $item->getName()
+            );
+
+            return new Response($simpleOutput->convert($response, $_format));
+        } catch (Exception $e) {
+            $response = array("success" => false, "error" => $e->getMessage());
+            return new Response($simpleOutput->convert($response, $_format));
+        }
+    }
+
     public function saveAction()
     {
         try {
@@ -57,33 +77,44 @@ class FormController extends Controller
             }
 
             if (!isset($_POST['name']) || empty($_POST['name'])) {
-                throw new \Exception("The name of the role cannot be empty");
+                throw new \Exception("The name of the form cannot be empty");
             }
+            $name = $_POST['name'];
+
+            if (!isset($_POST['formDefinition']) || empty($_POST['formDefinition'])) {
+                throw new \Exception("The formDefinition cannot be empty");
+            }
+            $formDefinition = $_POST['formDefinition'];
+
             $em = $this->get('doctrine.orm.entity_manager');
 
             if (isset($_POST['new'])) {
 
                 //
-                // Create role.
+                // Create form.
                 //
 
-                $role = new \Equinoxe\AuthenticationBundle\Entity\Role($_POST['name']);
-                $em->persist($role);
+                $form = new \Equinoxe\ExtJSFormBundle\Entity\ExtJSForm($formDefinition);
+                $form->setName($name);
+                $em->persist($form);
             } else {
 
                 //
-                // Edit role.
+                // Edit form.
                 //
 
-                $role = $em->find('Equinoxe\AuthenticationBundle\Entity\Role', $_POST['uid']);
-
-                if (!$this->get('security.context')->vote('ROLE_ADMIN')) {
-                    throw new \Exception("Access denied. Role ROLE_ADMIN required.");
+                if (!isset($_POST['uid']) || empty($_POST['uid'])) {
+                    throw new \Exception("The uid is required for editing.");
                 }
-                $role->setRole($_POST['name']);
+
+                $uid = $_POST['uid'];
+
+                $form = $em->find('Equinoxe\ExtJSFormBundle\Entity\ExtJSForm', $uid);
+                $form->setName($name);
+                $form->setFormDefinition($formDefinition);
             }
 
-             $em->flush();
+            $em->flush();
 
             return new Response("{success: true}");
 

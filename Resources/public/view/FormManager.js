@@ -3,17 +3,30 @@ Ext.ns("ExtJSFormBundle.view");
 ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
     initComponent: function() {
         var self = this;
+
+        if (!self.editorPlugins) {
+            self.editorPlugins = [];
+        }
+
         var action = {
             'add': new Ext.Action({
                 text: 'Add',
                 disabled: false,
                 icon: '/bundles/flexiflow/images/icons/add.png',
                 handler: function() {
-                    var record = self.list.getSelectionModel().getSelected();
-                    var exec = new ExtJSFormBundle.FormEditor({
-                        closable: true
+                    
+                    Ext.Msg.prompt('New form', 'Please enter the name of the new form:', function(btn, text) {
+                        if (btn == 'ok') {
+                            var exec = new ExtJSFormBundle.FormEditor({
+                                closable: true,
+                                form: new Ext.data.Record({
+                                    name: text
+                                }),
+                                plugins: self.editorPlugins
+                            });
+                            self.add(exec).show();
+                        }                    
                     });
-                    self.add(exec).show();
                 }
             }),
             'open': new Ext.Action({
@@ -23,30 +36,29 @@ ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
                 handler: function() {
                     var record = self.list.getSelectionModel().getSelected();
                     var exec = new ExtJSFormBundle.FormEditor({
+                        plugins: self.editorPlugins,
                         form: record,
                         closable: true,
                         listeners: {
                             afterRender: function(editor) {
                                 // Laden...
-                                var form = {
-                                  items : [    {
-                                      xtype : "textfield",
-                                      fieldLabel : "Text label"
-                                  },    {
-                                      xtype : "textfield",
-                                      fieldLabel : "Text label"
-                                  }]
-                                };
-                                editor.formPanel.removeAll();
-                                for(var i=0; i<form.items.length; i++) {
-                                    if (ExtJSFormBundle.xMap[form.items[i].xtype]) {
-                                        Ext.apply(form.items[i], {listeners: {focus: editor.componentSelector.focus}});
-                                        editor.formPanel.add(
-                                            new ExtJSFormBundle.xMap[form.items[i].xtype](form.items[i])
-                                        );
+                                Ext.Ajax.request({
+                                    url: 'form/get/' + record.get('uid') + '.json',
+                                    success: function(response) {
+                                        var res = Ext.decode(response.responseText);
+                                        var form = res.formDefinition.form;
+                                        editor.formPanel.removeAll();
+                                        for(var i=0; i<form.items.length; i++) {
+                                            if (ExtJSFormBundle.xMap[form.items[i].xtype]) {
+                                                Ext.apply(form.items[i], {listeners: {focus: editor.componentSelector.focus}});
+                                                editor.formPanel.add(
+                                                    new ExtJSFormBundle.xMap[form.items[i].xtype](form.items[i])
+                                                );
+                                            }
+                                        }
+                                        editor.formPanel.doLayout();
                                     }
-                                }
-                                editor.formPanel.doLayout();
+                                });
                             }
                         }
                     });
