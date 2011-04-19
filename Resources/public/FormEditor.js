@@ -7,7 +7,7 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
     initComponent: function() {
 
         var self = this;
-
+        self.formIsValid = false;
         self.create = true;
 
         if (self.form && self.form.get('uid')) {
@@ -189,8 +189,27 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     if (e.record.id == 'fieldLabel') {
                         this.currentObject.el.up('.x-form-item', 10, true).child('.x-form-item-label').update(e.value + ': ');
                     }
-                    this.currentObject.ownerCt.doLayout();
+                    var formIsValid=true
+                    var elemIsValid=false
+                    var formCt=this.currentObject.ownerCt.items.items;
+                    for (i = 0; i < formCt.length; i++){
+                        elemIsValid=formCt[i].validateElement();
+                        formIsValid = (formIsValid && elemIsValid);
+
+                        //DEBUG: show element status
+                        if (! elemIsValid ) {
+                            formCt[i].setValue('incomplete properties ;-)');
+                        }
+                        else{
+                            formCt[i].setValue('');
+                        }
+                    }
+                    self.formIsValid = formIsValid;
+                    if (self.formIsValid){
+                        Ext.Msg.alert("Formvalid","Form valid "+self.formIsValid);
+                    }
                     self.ownerCt.fireEvent('dirty', self.ownerCt);
+                    this.currentObject.ownerCt.doLayout();
                 }
             }
         });
@@ -336,6 +355,12 @@ ExtJSFormBundle.component.TextField = function() {
         name:       'string'
     };
 
+    var mandatoryProperties = {
+        fieldLabel: 'string',
+        name:       'string'
+    };
+
+    var elemIsValid = false;
     var component = Ext.extend(Ext.form.TextField, {
         storedConfig: {},
         initComponent: function() {
@@ -353,6 +378,20 @@ ExtJSFormBundle.component.TextField = function() {
         },
         getEditableProperties: function() {
             return editableProperties;
+        },
+        getMandatoryProperties: function() {
+            return mandatoryProperties;
+        },
+        validateElement: function() {
+            for (a in this.getMandatoryProperties()){
+                if (a in this && this[a].length > 0){
+                    this.elemIsValid = true;
+                }
+                else {
+                    this.elemIsValid = false;
+                }
+            }
+            return this.elemIsValid;
         }
     });
    
