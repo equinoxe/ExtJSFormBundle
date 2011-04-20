@@ -221,7 +221,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                 if (typeof obj[propName] != 'undefined') {
                     conf[propName] = obj[propName];
                 } else {
-                    var type = props[propName];
+                    var type = props[propName]['type'];
                     switch (type) {
                         case 'string':
                             conf[propName] = '';
@@ -351,14 +351,23 @@ ExtJSFormBundle.component.TextField = function() {
     };
 
     var editableProperties = {
-        fieldLabel: 'string',
-        name:       'string'
+        fieldLabel: {
+            type: 'string',
+            allowBlank: false
+        },
+        name: {
+            type: 'string',
+            allowBlank: false
+        }
     };
 
-    var mandatoryProperties = {
-        fieldLabel: 'string',
-        name:       'string'
-    };
+    var mandatoryProperties = {};
+
+    for (var propName in editableProperties) {
+        if (typeof editableProperties[propName]['allowBlank'] != 'undefined' && editableProperties[propName]['allowBlank'] == false) {
+            mandatoryProperties[propName] = true;
+        }
+    }
 
     var elemIsValid = false;
     var component = Ext.extend(Ext.form.TextField, {
