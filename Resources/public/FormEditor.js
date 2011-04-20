@@ -116,7 +116,6 @@ ExtJSFormBundle.FormEditor = Ext.extend(Ext.Panel, {
                   params: params,
                   success: function(response) {
                       var result = Ext.decode(response.responseText);
-                      console.log(result);
                       if (result.success && result.success == true) {
                           self.fireEvent('clean', self);
                       } else {
@@ -189,25 +188,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     if (e.record.id == 'fieldLabel') {
                         this.currentObject.el.up('.x-form-item', 10, true).child('.x-form-item-label').update(e.value + ': ');
                     }
-                    var formIsValid=true
-                    var elemIsValid=false
-                    var formCt=this.currentObject.ownerCt.items.items;
-                    for (i = 0; i < formCt.length; i++){
-                        elemIsValid=formCt[i].validateElement();
-                        formIsValid = (formIsValid && elemIsValid);
-
-                        //DEBUG: show element status
-                        if (! elemIsValid ) {
-                            formCt[i].setValue('incomplete properties ;-)');
-                        }
-                        else{
-                            formCt[i].setValue('');
-                        }
-                    }
-                    self.formIsValid = formIsValid;
-                    if (self.formIsValid){
-                        Ext.Msg.alert("Formvalid","Form valid "+self.formIsValid);
-                    }
+                    this.currentObject.validate();
                     self.ownerCt.fireEvent('dirty', self.ownerCt);
                     this.currentObject.ownerCt.doLayout();
                 }
@@ -237,8 +218,11 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     }
                 }
             }
-            propertyEditor.currentObject = obj;
-            propertyEditor.setSource(conf);
+            var setNewObject = function() {
+                propertyEditor.currentObject = obj;
+                propertyEditor.setSource(conf);
+            }
+            setNewObject.defer(50);
         };
 
         var focusLost = function(obj) {
@@ -383,24 +367,36 @@ ExtJSFormBundle.component.TextField = function() {
             }
             Ext.applyIf(this.storedConfig, defaultConfig);
             Ext.applyIf(this, defaultConfig);
+
+            this.validator = function() {
+                for (a in this.getMandatoryProperties()) {
+                    if (a in this && this[a].length > 0) {
+                        this.elemIsValid = true;
+                    } else {
+                        this.elemIsValid = 'The field »' + a + '« is mandatory!';
+                        break;
+                    }
+                }
+                return this.elemIsValid;
+            };
+
+            Ext.apply(this, {
+                readOnly: true
+            });
+
+
             component.superclass.initComponent.call(this);
+
+            this.addListener('afterrender', function(field) {
+               field.validate();
+            });
+
         },
         getEditableProperties: function() {
             return editableProperties;
         },
         getMandatoryProperties: function() {
             return mandatoryProperties;
-        },
-        validateElement: function() {
-            for (a in this.getMandatoryProperties()){
-                if (a in this && this[a].length > 0){
-                    this.elemIsValid = true;
-                }
-                else {
-                    this.elemIsValid = false;
-                }
-            }
-            return this.elemIsValid;
         }
     });
    
