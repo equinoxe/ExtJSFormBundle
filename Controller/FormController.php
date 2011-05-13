@@ -23,7 +23,7 @@ class FormController extends Controller
     {
         $simpleOutput = $this->get('equinoxe.simpleoutput');
         try {
-            if (!$this->get('security.context')->vote('ROLE_ADMIN')) {
+            if (!$this->get('security.context')->isGranted('ROLE_ADMIN')) {
                 throw new Exception('Access denied.');
             }
 
@@ -72,7 +72,7 @@ class FormController extends Controller
     public function saveAction()
     {
         try {
-            if (!$this->get('security.context')->vote('ROLE_ADMIN')) {
+            if (!$this->get('security.context')->isGranted('ROLE_ADMIN')) {
                 throw new \Exception("Access denied. Role ROLE_ADMIN required.");
             }
 
@@ -127,7 +127,7 @@ class FormController extends Controller
     {
         try {
             // Check rights.
-            if (!$this->get('security.context')->vote('ROLE_ADMIN')) {
+            if (!$this->get('security.context')->isGranted('ROLE_ADMIN')) {
                 throw new \Exception("Access denied. Role ROLE_ADMIN required.");
             }
 
