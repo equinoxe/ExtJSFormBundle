@@ -2,9 +2,10 @@
 namespace Equinoxe\ExtJSFormBundle\Entity;
 
 use Equinoxe\ExtJSFormBundle\Exceptions\JsonException;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @orm:Entity
+ * @ORM\Entity
  */
 class ExtJSForm
 {
@@ -17,9 +18,9 @@ class ExtJSForm
      * Unique number for every form. Auto incremented.
      *
      * @var integer
-     * @orm:Id
-     * @orm:Column(type="integer")
-     * @orm:GeneratedValue(strategy="IDENTITY")
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $uid;
 
@@ -27,7 +28,7 @@ class ExtJSForm
      * The name of the form.
      *
      * @var string
-     * @orm:Column(type="string")
+     * @ORM\Column(type="string")
      */
     private $name;
 
@@ -35,7 +36,7 @@ class ExtJSForm
      * The json Ext JS form definition.
      *
      * @var string
-     * @orm:Column(type="text")
+     * @ORM\Column(type="text")
      */
     private $formDefinition;
 
