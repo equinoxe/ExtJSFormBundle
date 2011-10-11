@@ -183,7 +183,14 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
             },
             listeners: {
                 afterEdit: function(e) {
-                    this.currentObject[e.record.id] = e.value;
+                    // Allow the injection of a setter Method for advanced properties.
+                    var props = this.currentObject.getEditableProperties();
+                    if (props[e.record.id] && typeof props[e.record.id]['setter'] == 'object' && props[e.record.id]['setter'].method) {
+                        var method = props[e.record.id]['setter'].method;
+                        this.currentObject[method](e.value);
+                    } else {
+                        this.currentObject[e.record.id] = e.value;
+                    }
                     this.currentObject.storedConfig[e.record.id] = e.value;
                     if (e.record.id == 'fieldLabel') {
                         this.currentObject.el.up('.x-form-item', 10, true).child('.x-form-item-label').update(e.value + ': ');
@@ -212,6 +219,9 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                             break;
                         case 'date':
                             conf[propName] = new Date();
+                            break;
+                        case 'number':
+                            conf[propName] = 0;
                             break;
                         default:
                             conf[propName] = '';
@@ -245,6 +255,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                     expanded: true,
                     children: [
                         ExtJSFormBundle.component.TextField.getTreeNode({listeners: {focus: self.focus}}),
+                        ExtJSFormBundle.component.TextArea.getTreeNode({listeners: {focus: self.focus}})/*,
                         {
                             text: 'Fieldset',
                             fieldInfo: {
@@ -292,7 +303,7 @@ ExtJSFormBundle.ComponentSelector = Ext.extend(Ext.Panel, {
                             },
                             draggable: true,
                             leaf: true
-                        }
+                        }*/
                     ]
 
                 },
@@ -417,8 +428,111 @@ ExtJSFormBundle.component.TextField = function() {
         }
     };
 }();
-
 ExtJSFormBundle.xMap['textfield'] = ExtJSFormBundle.component.TextField.getComponent();
+
+ExtJSFormBundle.component.TextArea = function() {
+
+    var defaultConfig = {
+        fieldLabel: 'Text label'
+    };
+
+    var editableProperties = {
+        fieldLabel: {
+            type: 'string',
+            allowBlank: false
+        },
+        name: {
+            type: 'string',
+            allowBlank: false
+        },
+        height: {
+            type: 'number',
+            allowBlank: true,
+            setter: {
+                method: 'setHeight'
+            }
+        },
+        width: {
+            type: 'number',
+            allowBlank: true,
+            setter: {
+                method: 'setWidth'
+            }
+        }
+    };
+
+    var mandatoryProperties = {};
+
+    for (var propName in editableProperties) {
+        if (typeof editableProperties[propName]['allowBlank'] != 'undefined' && editableProperties[propName]['allowBlank'] == false) {
+            mandatoryProperties[propName] = true;
+        }
+    }
+
+    var elemIsValid = false;
+    var component = Ext.extend(Ext.form.TextArea, {
+        storedConfig: {},
+        initComponent: function() {
+            this.storedConfig = {
+                xtype: 'textarea'
+            };
+            for (var propertyName in editableProperties) {
+                if (typeof this[propertyName] != 'undefined') {
+                    this.storedConfig[propertyName] = this[propertyName];
+                }
+            }
+            Ext.applyIf(this.storedConfig, defaultConfig);
+            Ext.applyIf(this, defaultConfig);
+
+            this.validator = function() {
+                for (a in this.getMandatoryProperties()) {
+                    if (a in this && this[a].length > 0) {
+                        this.elemIsValid = true;
+                    } else {
+                        this.elemIsValid = 'The field »' + a + '« is mandatory!';
+                        break;
+                    }
+                }
+                return this.elemIsValid;
+            };
+
+            Ext.apply(this, {
+                readOnly: true
+            });
+
+            component.superclass.initComponent.call(this);
+
+            this.addListener('afterrender', function(field) {
+               field.validate();
+            });
+
+        },
+        getEditableProperties: function() {
+            return editableProperties;
+        },
+        getMandatoryProperties: function() {
+            return mandatoryProperties;
+        }
+    });
+   
+
+    return {
+        getTreeNode: function(config) {
+            return {
+                text: 'Text area',
+                id: 'textarea',
+                leaf: true,
+                jsonComponent: component,
+                editableProperties: editableProperties,
+                editorConfig: config
+            }
+        },
+        getComponent: function() {
+            return component;
+        }
+    };
+}();
+ExtJSFormBundle.xMap['textarea'] = ExtJSFormBundle.component.TextArea.getComponent();
 
 
 
