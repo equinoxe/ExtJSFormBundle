@@ -50,7 +50,12 @@ ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
                                         editor.formPanel.removeAll();
                                         for(var i=0; i<form.items.length; i++) {
                                             if (ExtJSFormBundle.xMap[form.items[i].xtype]) {
-                                                Ext.apply(form.items[i], {listeners: {focus: editor.componentSelector.focus}});
+                                                Ext.apply(form.items[i], {
+                                                    listeners: {
+                                                        focus: editor.componentSelector.focus,
+                                                        afterrender: editor.componentSelector.maskIt
+                                                    }
+                                                });
                                                 editor.formPanel.add(
                                                     new ExtJSFormBundle.xMap[form.items[i].xtype](form.items[i])
                                                 );
@@ -119,6 +124,7 @@ ExtJSFormBundle.view.FormManager = Ext.extend(Ext.TabPanel, {
 
         Ext.apply(this, {
             title: 'Form Management',
+            cls: 'formmanagement',
             activeTab: 0,
             items: [
                 self.list

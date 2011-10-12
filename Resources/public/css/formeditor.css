@@ -1,0 +1,16 @@
+.formmanagement .x-form-item.x-masked {
+    overflow: visible !important;
+    padding: 2px;
+}
+
+.formmanagement .x-form-item.x-masked.focus {
+    background: #cc0;
+}
+
+.formmanagement .x-form-item.x-masked .ext-el-mask {
+    background: transparent;
+}
+
+.formmanagement form .x-form-item.x-masked .ext-el-mask:hover {
+    border: 1px solid #090;
+}
